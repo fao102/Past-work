@@ -6,21 +6,26 @@ from matplotlib.colors import ListedColormap
 import numpy
 from datetime import datetime
 
+def recommand_tanh(x):
+  return 1.7159*torch.tanh((2/3)*x)
 
-class SimpleNN(nn.Module):#inherits from nn.module
+
+class FileNN(nn.Module):#inherits from nn.module
     def __init__(self) -> None:
         super().__init__(self) 
-        self.layer_1_net = nn.Linear(2,2,bias=True) 
-        self.layer_2_net = nn.Linear(2,1,bias=True)#f(linear)= Wx +b 
-        self.layer_1_act = nn.Sigmoid()#f(act) = Sig(f(Linear))
+        self.layer_1_net = nn.Linear(2,800,bias=True) 
+        self.layer_1_act = recommand_tanh
+        self.layer_1_1_activation = recommand_tanh
+        self.layer_1_1_net = nn.Linear(800,800,bias=True)
         self.layer_2_act = nn.Sigmoid()
+        self.layer_2_net = nn.Linear(800,800,bias=True)#f(linear)=Wx +b
 
     def train(self, data, num_epochs = 10, lr = 0.003):
         criterion = nn.BCELoss()#loss function
         optimizer = torch.optim.SGD(self.parameters(), lr=lr)#using gradient descent, >0 = left and <0 = right
         for epoch in range(num_epochs):
             for item in data:
-                out = net(item[0])
+                out = self(item[0])
                 optimizer.zero_grad()
                 loss = criterion(torch.squeeze(out, item[1]))
                 loss.backward()
@@ -28,11 +33,21 @@ class SimpleNN(nn.Module):#inherits from nn.module
 
     
     def forward(self,x):
+        # x is our input, we pass the input to the layer_1_net linear transformation
         net_1_linear_trans = self.layer_1_net(x)
+        #After we obtain the linear transformation, we pass the net_1_linear_transformation to the activation function.
         net_1_act = self.layer_1_act(net_1_linear_trans)
-        net_2_linear_trans = self.layer_2_net(net_1_act)
-        layer_2_act = self.layer_2_act(net_2_linear_trans)
-        return layer_2_act
+
+        net_1_1_linear_trans = self.layer_1_1_net(net_1_act)
+        net_1_1_act = self.layer_1_1_act(net_1_1_linear_trans)
+    
+        # similar to layer 1 linear transformation, now we conduct linear transformation from hidden layer to output layer
+        net_2_linear_trans = self.layer_2_net(net_1_1_act)
+        # Apply Sigmoid activation function
+        layer2Act = self.layer_2_act(net_2_linear_trans)
+        return layer2Act
+    
+    
 
     def pred(self, data, thres = 0.5):
         pred = self.forward(data)
@@ -54,7 +69,7 @@ num_epochs = 500
 dataset = TensorDataset(x_train, y_train)
 loader = DataLoader(dataset, batch_size = batch_size)
 
-FileNet = SimpleNN()
+FileNet = FileNN()
 FileNet.to("cpu")
 strat_time = datetime.now()
 FileNet.train(loader,num_epochs=num_epochs, lr=learning_rate)
