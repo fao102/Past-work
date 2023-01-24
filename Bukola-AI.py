@@ -19,6 +19,9 @@ from ecapture import ecapture as ec
 engine = pyttsx3.init('sapi5') #Microsoft Text to speech engine used for voice recognition.
 voices = engine.getProperty('voices')#retrieves engine voice property
 engine.setProperty('voice','voives[0].id')#makes voice a male voice
+chrome_path="C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+webbrowser.register('chrome', None,webbrowser.BackgroundBrowser(chrome_path))
+
 
 def speak(text):
     engine.say(text)# takes the text as its argument,further initialize the engine.
@@ -27,31 +30,34 @@ def speak(text):
 def wishMe():# greets using appropriate phrase depending on the time
     hour = datetime.datetime.now().hour
     if 0 < hour < 12:
-        speak("Good Morning Filé")
-        print("Good Morning Filé")
+        speak("Good Morning Mr. Ajanaku, how can I help you today?")
+        print("Good Morning Mr. Ajanaku, how can I help you today?")
 
     elif 12 < hour < 18:
-        speak("Good Afternoon Filé")
-        print("Good Afternoon Filé")
+        speak("Good Afternoon Mr. Ajanaku, how can I help you today?")
+        print("Good Afternoon Mr. Ajanaku, how can I help you today?")
 
     else:
-        speak("Good Evening Filé")
-        print("Good Evening Filé")
+        speak("Good Evening Mr. Ajanaku, how can I help you today?")
+        print("Good Evening Mr. Ajanaku, how can I help you today?")
 
 def takecommand(): #function to say command to Bukola
     recog = sr.Recognizer()
     with sr.Microphone() as source:
         print("Listening...")
-        audio = recog.listen(source)
+        audio = recog.record(source, duration = 5)
 
         try:
-           statement = recog.recognize_google(audio,language = 'en-in')
+           statement = recog.recognize_google(audio,language = 'en-in')#speech to text process
            print(f"you said: {statement}\n")
 
+        except sr.UnknownValueError:
+            print("Sorry I could not understand what you just said, please repeat")
+            speak("Sorry I could not understand what you just said, please repeat")
 
-        except Exception as e:
-           speak("Pardon me, please say that again, couldn't quite catch that")
-           return "None"
+        except sr.RequestError as e:
+            print("Sorry I could not understand what you just said, please repeat")
+            speak("Sorry I could not understand what you just said, please repeat")int("Could not request results from Google Speech Recognition service; {0}".format(e))
 
         return statement
 
@@ -62,7 +68,7 @@ wishMe()
 if __name__ == '__main__':
 
     while True:
-        speak("Hello Mr. Ajanaku, how can I help you today?")
+        
         statement = takecommand().lower()
         response = takecommand()
         if statement == 0:
@@ -87,6 +93,7 @@ if __name__ == '__main__':
             time.sleep(5)
 
         elif 'open google' in statement:
+           
             webbrowser.get("chrome").open_new("https://www.google.com")
             speak("Google chrome is open now")
             time.sleep(5)
