@@ -1,0 +1,58 @@
+// Inputs from Vertex Shader
+in vec3 fragmentPosition;
+in vec3 aNormal;
+in vec3 aPos;
+in vec2 aTexCoord;
+
+out vec4 fragColor;
+// Spotlight parameters
+
+uniform vec3 viewPos;
+uniform vec3 lightPos;         // Spotlight position (the sphere position)
+uniform vec3 lightDir;         // Spotlight direction
+uniform float cutOff;          // Inner cutoff angle (cosine of the angle)
+uniform float outerCutOff;     // Outer cutoff angle (cosine of the angle for smooth edges)
+uniform vec3 lightColor;       // Color of the light
+uniform float intensity;       // Intensity of the light
+
+
+
+struct Light {
+  vec3 position;
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+};
+
+uniform Light light;  
+
+struct Material {
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+  float shininess;
+}; 
+uniform Material material;
+
+
+void main() {
+    // Compute the light direction
+    vec3 lightToFrag = normalize(fragmentPosition - lightPos);
+    
+    // Compute the angle between the light direction and the fragment position
+    float theta = dot(lightToFrag, normalize(-lightDir)); // Negative because lightDir points inward
+
+    // Spotlight intensity factor
+    float epsilon = cutOff - outerCutOff;
+    float spotlightIntensity = clamp((theta - outerCutOff) / epsilon, 0.0, 1.0);
+
+    // Ambient, diffuse, and specular lighting
+    vec3 ambient = 0.1 * lightColor;
+    vec3 diffuse = max(dot(aNormal, -lightToFrag), 0.0) * lightColor * spotlightIntensity;
+    vec3 viewDir = normalize(viewPos - aPos);
+    vec3 specular = pow(max(dot(viewDir, reflect(-lightToFrag, aNormal)), 0.0), material.shininess) * lightColor * spotlightIntensity;
+
+    // Final color output
+    vec3 result = (ambient + diffuse + specular) * intensity;
+    fragColor = vec4(result, 1.0);
+}

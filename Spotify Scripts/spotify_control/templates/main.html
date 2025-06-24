@@ -1,0 +1,54 @@
+<!-- templates/main.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'src/css/styles.css' %}">
+    <title>Spotify Playlist Management</title>
+</head>
+<body>
+   
+    <div class="container">
+        <h1>Spotify Playlist Management</h1>
+        
+
+        <div class="form-container">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_orig_playlist_link">Original Playlist Link:</label>
+                    {{ form.orig_playlist_link }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_new_playlist_link">New Playlist Link:</label>
+                    {{ form.new_playlist_link }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_date"> Cut off Date (YYYY-MM-DD):</label>
+                    {{ form.date }}
+                </div>
+
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+
+        {% if tracks %}
+            <div class="track-list">
+                <h2>Tracks to be added:</h2>
+                <ul>
+                    {% for track in tracks %}
+                        <li>{{ track.0 }} {{ track.1 }} {{ track.2 }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {%else%}
+            <h2>No tracks added before submitted date</h2>
+        {% endif %}
+    </div>
+</body>
+</html>
